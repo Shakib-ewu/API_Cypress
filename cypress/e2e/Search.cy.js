@@ -1,112 +1,67 @@
 import 'cypress-mochawesome-reporter/register';
 
-describe('Verifying Search', () => {
+// Custom command for handling password modal
+Cypress.Commands.add('unlockStore', (password = 'DEVsea-bags') => {
+  cy.get('.modal__toggle-open').click();
+  cy.get('[id="Password"]').type(password);
+  cy.get('.password-button').click();
+  cy.wait(4000);
+});
+
+describe('Search Functionality', () => {
   beforeEach(() => {
     cy.viewport(1920, 1080);
     cy.intercept('/some-3rd-party-script.js*').as('externalScript');
-    cy.visit('/');
-    cy.wait(4000);
-    cy.get('body').click(0, 0);
+    cy.visit('https://seabags-dev1.myshopify.com/', { failOnStatusCode: false });
+    cy.unlockStore();
   });
 
-  it('should display the search input and allow typing', () => {
-  cy.xpath("//input[contains(@id,'Search-In-Modal')]").eq(0).click(); // open search if hidden
-  cy.get('input[name="q"]').first().type('whisky{enter}');
-
-});
-
-it('should return results for a valid keyword', () => {
-  cy.xpath("//input[contains(@id,'Search-In-Modal')]").eq(0).click(); // open search if hidden
-  cy.get('input[name="q"]').first().type('whisky{enter}', { delay: 100 });
-  cy.url().should('include', 'q=whisky');
-
-  // Normalize and assert on the text content
-  cy.xpath("//h1[@class='h2 custom_search_heading page-width']")
-  .should('contain.text', 'whisky'); // use lowercase if the real content is in lowercase
-
-});
-
-it('should display no results message for an invalid search', () => {
- cy.xpath("//input[contains(@id,'Search-In-Modal')]").eq(0).click(); // open search if hidden
-  cy.get('input[name="q"]').first().type('xyz123notfound{enter}');
-  cy.contains('No results found').should('be.visible');
-});
-
-it('should handle special characters gracefully', () => {
- cy.xpath("//input[contains(@id,'Search-In-Modal')]").eq(0).click();
-  cy.get('input[name="q"]').first().type('!@#$%^&*(){enter}');
-  cy.contains('Search Results For !@#$%^&*()').should('be.visible');
-});
-
-it('should show suggestions while typing', () => {
-   cy.xpath("//input[contains(@id,'Search-In-Modal')]").eq(0).click();
-  cy.get('input[name="q"]').first().type('wine');
-  cy.get('.predictive_search_result_left').should('be.visible');
-});
-
-it('should return same results for upper/lowercase terms', () => {
-  cy.xpath("//input[contains(@id,'Search-In-Modal')]").eq(0).click();
-  cy.get('input[name="q"]').first().type('WHISKY{enter}');
-  cy.get('.product-grid').should('exist');
-
-  // Go back to the previous page
-  cy.go('back');
-
-  // Reopen the search modal again (because it's likely hidden now)
-  cy.xpath("//input[contains(@id,'Search-In-Modal')]").eq(0).click();
-
-  // Clear the input and type the lowercase version
-  cy.get('input[name="q"]').first().clear().type('whisky{enter}');
-  cy.get('.product-grid').should('exist');
-});
-
-it('should navigate to correct product page on result click', () => {
-  cy.xpath("//input[contains(@id,'Search-In-Modal')]").eq(0).click();
-  cy.get('input[name="q"]').first().type('scotch{enter}');
-  cy.get('.product-grid a:visible').first().click();
-  cy.url().should('include', '/products/');
-});
-
-it('should load more products when "Load More" is clicked', () => {
-  cy.xpath("//input[contains(@id,'Search-In-Modal')]").eq(0).click();
-
-  // Type a keyword and press enter
-  cy.get('input[name="q"]').first().type('whisky{enter}');
-
-  // Wait for initial products to load
-  cy.get('.product-grid .card__content').then(initialItems => {
-    const initialCount = initialItems.length;
-
-    // Click the "Load More" button
-    cy.contains('button', 'Load More')
-      .should('be.visible')
-      .click();
-
-    // Assert more products are loaded
-    cy.get('.product-grid .card__content')
-      .should('have.length.greaterThan', initialCount);
+  it('opens search drawer when clicking on search input', () => {
+    cy.get('#Search-In-Modal').click({force: true});
+    cy.get('#predictive-search-results').should('be.visible');
   });
-});
 
-it('should find a specific product by search', () => {
-  const productName = 'Glen Scotia Victoriana Campbeltown Single Malt Scotch Whisky';
+  it('closes search drawer when clicking outside', () => {
+    cy.get('#Search-In-Modal').click({force: true});
+    cy.get('#predictive-search-results').should('be.visible');
+    cy.get('body').click(0, 0); // Click outside
+    cy.get('#predictive-search-results').should('not.be.visible');
+  });
 
-  // Open the search modal/input
-   cy.xpath("//input[contains(@id,'Search-In-Modal')]").eq(0).click();
+  it('displays best matches when typing in search input', () => {
+    cy.get('#Search-In-Modal').click({force: true}).type('tote');
+    cy.contains('Best matches for tote').should('be.visible');
+    cy.get('#predictive-search-products').should('have.length.gte', 1);
+  });
 
-  // Type the product name and press Enter
-  cy.get('input[name="q"]').first().type(`${productName}{enter}`);
+  it('navigates to search results page when pressing enter', () => {
+    cy.get('#Search-In-Modal').click({force: true}).type('tote bag{enter}');
+    cy.url().should('include', '/search?q=tote+bag');
+    cy.get('h1, [data-testid="search-title"]').should('be.visible');
+  });
 
-  // Verify search results contain the product
-  cy.get('#CardLink--8117308457152')
-    .should('exist')
-    .contains(productName)
-    .should('be.visible');
-});
+  it('handles empty search input on enter', () => {
+    cy.get('#Search-In-Modal').click({force: true}).type('{enter}');
+    cy.url().should('include', '/search?q=');
+    cy.contains('Find what\'s on your mind?').should('be.visible');
+  });
 
+  it('handles search for non-existent term', () => {
+    cy.get('#Search-In-Modal').click({force: true}).type('rtrtreyery{enter}');
+  cy.url().should('include', '/search?q=rtrtreyery');
+ cy.get('#product-grid', { timeout: 15000 })
+    .should('be.visible')
+    .and(($grid) => {
+      const text = $grid.text().trim();
+      expect(text).to.match(/Oops! We Couldn'?t Find Any Matching Products/i);
+    })
+  });
 
+  it('updates suggestions dynamically on input change', () => {
+    cy.get('#Search-In-Modal').click({force: true}).type('tote');
+    cy.get('#predictive-search-results').should('be.visible');
+    cy.get('#Search-In-Modal').clear().type('backpack');
+    cy.get('#predictive-search-results').should('be.visible');
+  });
 
-
-
-});
-  
+})

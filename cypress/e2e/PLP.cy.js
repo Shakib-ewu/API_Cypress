@@ -1,113 +1,51 @@
 import 'cypress-mochawesome-reporter/register';
 
-describe('Verifying PLP', () => {
+// Custom command for handling password modal
+Cypress.Commands.add('unlockStore', (password = 'DEVsea-bags') => {
+  cy.get('.modal__toggle-open').click();
+  cy.get('[id="Password"]').type(password);
+  cy.get('.password-button').click();
+  cy.wait(4000);
+});
+
+describe('Homepage Automation Demo', () => {
   beforeEach(() => {
     cy.viewport(1920, 1080);
     cy.intercept('/some-3rd-party-script.js*').as('externalScript');
-    cy.visit('/',{ failOnStatusCode: false });
-    cy.wait(4000);
-    cy.get('body').click(0, 0);
+    cy.visit('https://seabags-dev1.myshopify.com/', { failOnStatusCode: false });
+    cy.unlockStore();
   });
 
-  it('Verifying product in new arrival section', () => {
-    cy.xpath("//a[contains(text(),'spirits')]")
-    .should('be.visible')
-    .click({ force: true });
-});
-})
+it('PLP Automation: Iterate All Sort Dropdown Options', () => {
+  cy.contains(/^shop all$/i).filter(':visible').first().click();
+  cy.url().should('include', '/all');
+  cy.contains('All Products').should('be.visible');
 
-/*it('should display all sort by options correctly', () => {
-  const expectedOptions = [
-    'Featured',
-    'Best Selling',
+  const sortDropdown = '.text-seabags-black.font-body.font-medium';
+  const sortOptions = [
     'Alphabetically, A-Z',
     'Alphabetically, Z-A',
-    'Price, Low to High',
-    'Price, High to Low',
-    'Date, Old to New',
-    'Date, New to Old'
-  ].map(option => option.toUpperCase()); // Normalize expected values
-
-  // Navigate to the Spirits & Liqueurs page
-  cy.xpath("//a[contains(text(),'spirits')]")
-    .should('be.visible')
-    .click({ force: true });
-
-  // Ensure the Sort By dropdown is visible and click to open it
-  cy.get('.svg-wrapper.filter-svg-wrapper')
-    .scrollIntoView({ duration: 300 })
-    .should('be.visible')
-    .click();
-
-  // Target the dropdown menu and assert each option
-  cy.get('.facet-filters__content')
-    .find('.facet-filters__link')
-    .should('have.length', expectedOptions.length)
-    .should('be.visible')
-    .each(($el, index) => {
-      cy.wrap($el).invoke('text').then(text => {
-        cy.log('Option text:', text.trim().toUpperCase()); // Debug log
-        expect(text.trim().toUpperCase()).to.eq(expectedOptions[index]);
-      });
-    });
-});
-
-it('should display and click all sort by options correctly', () => {
-  const expectedOptions = [
-    'Featured',
-    'Best Selling',
-    'Alphabetically, A-Z',
-    'Alphabetically, Z-A',
-    'Price, Low to High',
-    'Price, High to Low',
-    'Date, Old to New',
-    'Date, New to Old'
+    'Price, low to high',
+    'Price, high to low',
+    'Date, old to new',
+    'Date, new to old'
   ];
 
-  // Go to the spirits page
-  cy.xpath("//a[contains(text(),'spirits')]")
-    .should('be.visible')
-    .click({ force: true });
+  sortOptions.forEach(optionText => {
+    // Open dropdown (ignore overlay by forcing the click)
+    cy.get(sortDropdown).filter(':visible').first().click({ force: true });
 
-  // Function to open the sort dropdown
-  const openDropdown = () => {
-    cy.get('.svg-wrapper.filter-svg-wrapper')
-      .scrollIntoView({ duration: 300 })
-      .should('be.visible')
-      .click();
-  };
+    // Click the option (again force to bypass overlay)
+    cy.contains(optionText, { timeout: 15000 }).click({ force: true });
 
-  // Open dropdown initially
-  openDropdown();
+    // Give the page a small pause so sorting can finish
+    cy.wait(5000);
 
-  // Loop through each sort option
-  expectedOptions.forEach((expectedText, index) => {
-    // Open dropdown before every click (except first, already open)
-    if (index > 0) openDropdown();
-
-    // Get the current list again (re-rendered DOM)
-    cy.get('.facet-filters__content')
-      .find('.facet-filters__link')
-      .should('have.length', expectedOptions.length)
-      .eq(index)
-      .should('be.visible')
-      .invoke('text')
-      .then(text => {
-        expect(text.trim().toUpperCase()).to.eq(expectedText.toUpperCase());
-      });
-
-    // Click the sort option
-    cy.get('.facet-filters__content')
-      .find('.facet-filters__link')
-      .eq(index)
-      .click({ force: true });
-
-    // Optional: validate page content updates after sorting
-    // e.g., check for URL change, product order, etc.
-    cy.wait(2000); // wait for the sorting effect (update as needed)
+    // Confirm products exist
+    cy.get('[class*=grid] [class*=product], .product-item, [data-testid*="product"]')
+      .should('have.length.greaterThan', 0)
+      .then($p => cy.log(`"${optionText}" applied → ${$p.length} products`));
   });
 });
-
-});*/
-
+})
 

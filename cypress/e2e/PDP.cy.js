@@ -1,105 +1,67 @@
-describe("Verifying PDP", () => {
+import 'cypress-mochawesome-reporter/register';
 
+// Custom command for handling password modal
+Cypress.Commands.add('unlockStore', (password = 'yeuffa') => {
+  cy.get('.modal__toggle-open').click();
+  cy.get('[id="Password"]').type(password);
+  cy.get('.password-button').click();
+  cy.wait(4000);
+});
+
+describe('PDP Automation Demo', () => {
   beforeEach(() => {
+    cy.viewport(1920, 1080);
+    cy.intercept('/some-3rd-party-script.js*').as('externalScript');
+   cy.visit('/', { failOnStatusCode: false });
+    cy.unlockStore();
+  });
 
-      cy.viewport(1920,1080);
-      cy.intercept('/some-3rd-party-script.js*').as('externalScript');
-      cy.visit('/',{ failOnStatusCode: false })
-      cy.wait(4000)
-      cy.get('body').click(0, 0);
-  })
+  it('Featured Product: Add to Cart and Checkout Flow', () => {
+    // Scroll to product section
+    cy.contains('Red Mariner Stripe Beverage Bucket Bag').scrollIntoView();
+    cy.log('Clicking product: Red Mariner Stripe Beverage Bucket Bag');
+    cy.contains('Red Mariner Stripe Beverage Bucket Bag').click();
 
-  it('Verifying products in PDP', () => {
-    cy.scrollTo('center');
-    cy.xpath('//a[contains(text(), " Glen Keith 21 Year Old Speyside Single Malt")]')
-      .should('exist').eq(0).click({force:true}); // Added assertion for better test validation
-      cy.xpath('//span[@class="swym-wishlist-cta"]').invoke('show').click({force:true});
-      cy.xpath('//button[@id="ProductSubmitButton-template--18252412780736__main"]').eq(0).click({force:true});
-      cy.wait(4000);
-      cy.xpath("//button[@class='cart__checkout-button button cta-filled']").eq(0).click({force:true});
-      cy.xpath("//a[@href='https://craftcellars.ca']").click({force:true});
-      cy.xpath('//a[contains(text(), " Glen Keith 21 Year Old Speyside Single Malt")]').eq(0).click({force:true});
-      cy.scrollTo('center');
-      cy.get("a[href='/blogs/news/caramel-espresso-martini']").click({ force: true });
-      cy.go('back');
-      cy.get("a[href='/blogs/news/citrus-gin-fizz']").click({ force: true });
-      cy.go('back');
-      cy.get("a[href='/blogs/news']").eq(0).click({ force: true });
-      cy.go('back');
+    // Verify PDP loaded
+    cy.url().should('include', '/products/');
+    cy.get('h1').should('contain.text', 'Red Mariner Stripe Beverage Bucket Bag');
 
+    cy.wait(3000);
 
+    // Add to cart (resilient to dynamic IDs)
+    cy.get('button[id^="ProductSubmitButton-"]', { timeout: 10000 })
+      .filter(':visible')
+      .first()
+      .scrollIntoView()
+      .should('be.visible')
+      .and('be.enabled')
+      .click({ force: true });
 
-    
+    // Wait for cart drawer or page to appear
+    cy.wait(2000); // Adjust if needed for your UI
 
-     
-});
+    // Click checkout button (robust selector)
+    cy.contains('button', 'Checkout', { matchCase: false, timeout: 10000 })
+      .filter(':visible')
+      .first()
+      .should('be.visible')
+      .click({ force: true });
 
-it.only('Verifies product, adds to wishlist and cart, checks out and visits blogs', () => {
-  // Scroll to product section and click the product
-  cy.scrollTo('center');
-  cy.xpath('//a[contains(text(), "Glen Keith 21 Year Old Speyside Single Malt")]')
-    .should('exist')
-    .first()
-    .click({ force: true });
+    // Verify product in cart
+    cy.contains('Red Mariner Stripe Beverage Bucket Bag').should('exist');
 
-  // Add to wishlist
- cy.xpath('//span[@class="swym-wishlist-cta"]')
- .should('exist')
-  .invoke('show') // only works if the element allows JS override
-  .click({ force: true });
-  cy.wait(3000);
+    // Verify checkout page
+    cy.url().should('include', '/checkout');
 
-  // Scroll to and click Add to Cart button
-  cy.scrollTo('center');
- cy.xpath('//button[contains(@id, "ProductSubmitButton-template--")]')
-  .should('be.visible')
-  .eq(0)
-  .click({ force: true });
+    // Go back to homepage
+    cy.visit('/');
+  });
 
 
 
-  // Proceed to checkout
-  cy.xpath("//button[contains(@class, 'cart__checkout-button')]", { timeout: 10000 })
-    .should('be.visible').eq(0)
-    .click({ force: true });
 
 
-  // Navigate back to home
-  cy.xpath("//a[@href='https://craftcellars.ca']")
-    .should('exist')
-    .click({ force: true });
-
-  // Reopen the same product
-  cy.xpath('//a[contains(text(), "Glen Keith 21 Year Old Speyside Single Malt")]')
-    .should('exist')
-    .first()
-    .click({ force: true });
-
-  // Visit blog: Caramel Espresso Martini
-  cy.get("a[href='/blogs/news/caramel-espresso-martini']")
-    .scrollIntoView()
-    .should('exist')
-    .click({ force: true });
-  cy.go('back');
-
-  // Visit blog: Citrus Gin Fizz
-  cy.get("a[href='/blogs/news/citrus-gin-fizz']")
-    .scrollIntoView()
-    .should('exist')
-    .click({ force: true });
-  cy.go('back');
-
-  // Visit general blog page
-  cy.get("a[href='/blogs/news']")
-    .first()
-    .scrollIntoView()
-    .should('exist')
-    .click({ force: true });
-  cy.go('back');
-});
 
 
-});
 
-
-  
+})
