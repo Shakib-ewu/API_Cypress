@@ -8,7 +8,7 @@ Cypress.Commands.add('unlockStore', (password = 'DEVsea-bags') => {
   cy.wait(4000);
 });
 
-describe('Homepage Automation Demo', () => {
+describe('PLP Automation Demo', () => {
   beforeEach(() => {
     cy.viewport(1920, 1080);
     cy.intercept('/some-3rd-party-script.js*').as('externalScript');
