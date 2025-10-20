@@ -95,9 +95,6 @@ describe('Homepage Automation Demo', () => {
   it('Validates "See how we do it" & "Learn More" Flow', () => {
     cy.contains('See how we do it').scrollIntoView().click();
     cy.go('back');
-    //cy.contains('Our Mission').scrollIntoView().should('be.visible');
-    /*cy.contains('LEARN MORE').scrollIntoView().click();
-    cy.go('back');*/
   });
 
 /*it.skip('Verifies section title, handle, and follow button', () => {

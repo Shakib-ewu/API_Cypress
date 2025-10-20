@@ -38,7 +38,7 @@ describe('PDP Automation Demo', () => {
       .click({ force: true });
 
     // Wait for cart drawer or page to appear
-    cy.wait(2000); // Adjust if needed for your UI
+    cy.wait(2000);
 
     // Click checkout button (robust selector)
     cy.contains('button', 'Checkout', { matchCase: false, timeout: 10000 })
