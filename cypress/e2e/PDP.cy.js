@@ -37,7 +37,7 @@ describe('PDP Automation Demo', () => {
       .and('be.enabled')
       .click({ force: true });
 
-    // Wait for cart drawer or page to appear
+    
     cy.wait(2000);
 
     // Click checkout button (robust selector)
