@@ -1,6 +1,5 @@
 import 'cypress-mochawesome-reporter/register';
 
-// Custom command for handling password modal
 Cypress.Commands.add('unlockStore', (password = 'yeuffa') => {
   cy.get('.modal__toggle-open').click();
   cy.get('[id="Password"]').type(password);
