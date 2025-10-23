@@ -46,13 +46,11 @@ describe('PDP Automation Demo', () => {
       .should('be.visible')
       .click({ force: true });
 
-    // Verify product in cart
+    
     cy.contains('Red Mariner Stripe Beverage Bucket Bag').should('exist');
 
     // Verify checkout page
     cy.url().should('include', '/checkout');
-
-    // Go back to homepage
     cy.visit('/');
   });
 

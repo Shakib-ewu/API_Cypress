@@ -37,7 +37,6 @@ it('PLP Automation: Iterate All Sort Dropdown Options', () => {
     // Click the option (again force to bypass overlay)
     cy.contains(optionText, { timeout: 15000 }).click({ force: true });
 
-    // Give the page a small pause so sorting can finish
     cy.wait(5000);
 
     // Confirm products exist
