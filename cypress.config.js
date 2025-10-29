@@ -24,5 +24,9 @@ numTestsKeptInMemory: 0,
       require('cypress-mochawesome-reporter/plugin')(on);
       // Add any custom Node event listeners here
     },
+    env: {
+  GITHUB_TOKEN: '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'
+}
+
   },
 });

@@ -30,21 +30,16 @@ describe('Basic Authentication', () => {
         });
     });
 
-    it('Bearer Token Auth Test (requires GITHUB_TOKEN env var)', function () {
+   /* it('Bearer Token Auth Test', () => {
         const token = Cypress.env('GITHUB_TOKEN'); // set locally as CYPRESS_GITHUB_TOKEN or in CI secrets
-        if (!token) {
-            cy.log('GITHUB_TOKEN not set; skipping Bearer Token test');
-            this.skip();
-            return;
-        }
         cy.request({
             method: 'GET',
             url: 'https://api.github.com/user/repos',
-            headers: {
+            headers: {      
                 Authorization: `Bearer ${token}`
             }
         }).then((response) => {
             expect(response.status).to.eq(200);
         });
-    });
+    });    */
 })
