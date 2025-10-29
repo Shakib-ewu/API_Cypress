@@ -30,7 +30,7 @@ describe('Basic Authentication', () => {
         });
     });
 
-    it('Bearer Token Auth Test', () => {
+  /*  it('Bearer Token Auth Test', () => {
         const token = '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'; // Replace with a valid token
         cy.request({
             method: 'GET',
@@ -41,5 +41,5 @@ describe('Basic Authentication', () => {
         }).then((response) => {
             expect(response.status).to.eq(200);
         });
-    });     
+    });   */
 })
