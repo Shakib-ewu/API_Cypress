@@ -25,7 +25,7 @@ numTestsKeptInMemory: 0,
       // Add any custom Node event listeners here
     },
     env: {
-  GITHUB_TOKEN: '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'
+  GITHUB_TOKEN: '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'
 }
 
   },

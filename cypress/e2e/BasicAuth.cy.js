@@ -30,7 +30,7 @@ describe('Basic Authentication', () => {
         });
     });
 
-   /* it('Bearer Token Auth Test', () => {
+   it('Bearer Token Auth Test', () => {
         const token = Cypress.env('GITHUB_TOKEN'); // set locally as CYPRESS_GITHUB_TOKEN or in CI secrets
         cy.request({
             method: 'GET',
@@ -41,5 +41,5 @@ describe('Basic Authentication', () => {
         }).then((response) => {
             expect(response.status).to.eq(200);
         });
-    });    */
+    });
 })
